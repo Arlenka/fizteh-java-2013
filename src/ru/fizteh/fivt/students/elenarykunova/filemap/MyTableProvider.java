@@ -17,11 +17,22 @@ import ru.fizteh.fivt.storage.structured.TableProvider;
 import ru.fizteh.fivt.students.elenarykunova.shell.Shell;
 import ru.fizteh.fivt.students.elenarykunova.shell.Shell.ExitCode;
 import org.json.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class MyTableProvider implements TableProvider {
 
     private String rootDir = null;
     private HashMap<String, Filemap> tables = new HashMap<String, Filemap>();
+    private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
+    private Lock read = readWriteLock.readLock();
+    private Lock write = readWriteLock.writeLock();
+    private ThreadLocal<String> currentTable = new ThreadLocal<String>() {
+        @Override
+        protected String initialValue() {
+            return null;
+        }
+    };
 
     public MyTableProvider() {
     }
@@ -93,9 +104,14 @@ public class MyTableProvider implements TableProvider {
             if (tables.get(name) != null) {
                 return (Table) tables.get(name);
             } else {
-                Filemap result = new Filemap(tablePath, name, this, oldTypes);
-                tables.put(name, result);
-                return (Table) result;
+                try {
+                    write.lock();
+                    Filemap result = new Filemap(tablePath, name, this, oldTypes);
+                    tables.put(name, result);
+                    return (Table) result;
+                } finally {
+                    write.unlock();
+                }
             }
         } catch (IOException e1) {
             throw new RuntimeException("can't read info from signature.tsv", e1);
@@ -234,10 +250,20 @@ public class MyTableProvider implements TableProvider {
                                 + " exists, but types mismatch");
                     }
                 }
-                if (tables.get(name) == null) {
-                    Filemap result = new Filemap(tablePath, name, this,
-                            columnTypes);
-                    tables.put(name, result);
+                try {
+                    read.lock();
+                    if (tables.get(name) == null) {
+                        try {
+                            write.lock();
+                            Filemap result = new Filemap(tablePath, name, this,
+                                    columnTypes);
+                            tables.put(name, result);
+                        } finally {
+                            write.unlock();
+                        }
+                    }
+                } finally {
+                    read.unlock();
                 }
             }
             return null;
