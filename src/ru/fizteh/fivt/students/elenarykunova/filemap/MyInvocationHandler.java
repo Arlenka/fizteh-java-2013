@@ -24,6 +24,7 @@ public class MyInvocationHandler implements InvocationHandler {
 
     private void writeIterable(Iterable array, IdentityHashMap<Object, Boolean> map) throws XMLStreamException {
         xmlWriter.writeStartElement("list");
+        map.put(array, true);
         for (Object object : array) {
             xmlWriter.writeStartElement("value");
             if (object == null) {

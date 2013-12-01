@@ -237,19 +237,19 @@ public class MyStoreable implements Storeable {
                 Class<?> type = myTypes.get(i);
                 if (type.equals(Integer.class)) {
                     res.append(String.valueOf((Integer) val));
-                } else if(type.equals(String.class)) {
+                } else if (type.equals(String.class)) {
                     res.append(val);
-                } else if(type.equals(Boolean.class)) {
+                } else if (type.equals(Boolean.class)) {
                     res.append(String.valueOf((Boolean) val));
-                } else if(type.equals(Float.class)) {
+                } else if (type.equals(Float.class)) {
                     res.append(String.valueOf((Float) val));
-                } else if(type.equals(Double.class)) {
+                } else if (type.equals(Double.class)) {
                     res.append(String.valueOf((Double) val));
-                } else if(type.equals(Byte.class)) {
+                } else if (type.equals(Byte.class)) {
                     res.append(String.valueOf((Byte) val));
-                } else if(type.equals(Long.class)) {
+                } else if (type.equals(Long.class)) {
                     res.append(String.valueOf((Long) val));
-                } else {     
+                } else {
                     throw new RuntimeException("unexpected type : " + myTypes.get(i).getSimpleName());
                 }
             }
