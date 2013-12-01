@@ -51,8 +51,8 @@ public class MyTableProvider implements TableProvider, AutoCloseable {
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             if (c == '\\' || c == '/' || c == '.' || c == ':' || c == '*' || c == '?' || c == '|' || c == '"'
-                    || c == '<' || c == '>' || c == ' ' || c == '\t' 
-                    || c == '\n' || c == '\r' || c == '(' || c == ')') {
+                    || c == '<' || c == '>' || c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '('
+                    || c == ')') {
                 return true;
             }
         }
@@ -127,40 +127,47 @@ public class MyTableProvider implements TableProvider, AutoCloseable {
     }
 
     private void writeTypes(File info, List<Class<?>> types) throws IOException {
-        FileOutputStream os;
-        os = new FileOutputStream(info);
-
-        for (int i = 0; i < types.size(); i++) {
-            switch (types.get(i).getSimpleName()) {
-            case "Integer":
-                os.write("int".getBytes());
-                break;
-            case "Long":
-                os.write("long".getBytes());
-                break;
-            case "Double":
-                os.write("double".getBytes());
-                break;
-            case "Byte":
-                os.write("byte".getBytes());
-                break;
-            case "Float":
-                os.write("float".getBytes());
-                break;
-            case "Boolean":
-                os.write("boolean".getBytes());
-                break;
-            case "String":
-                os.write("String".getBytes());
-                break;
-            default:
-                throw new IOException("unexpected type in table");
+        Throwable e = null;
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream(info);
+            for (int i = 0; i < types.size(); i++) {
+                Class<?> type = types.get(i);
+                if (type.equals(Integer.class)) {
+                    os.write("int".getBytes());
+                } else if (type.equals(String.class)) {
+                    os.write("String".getBytes());
+                } else if (type.equals(Boolean.class)) {
+                    os.write("boolean".getBytes());
+                } else if (type.equals(Float.class)) {
+                    os.write("float".getBytes());
+                } else if (type.equals(Double.class)) {
+                    os.write("double".getBytes());
+                } else if (type.equals(Byte.class)) {
+                    os.write("byte".getBytes());
+                } else if (type.equals(Long.class)) {
+                    os.write("long".getBytes());
+                } else {
+                    throw new IOException("unexpected type in table: " + type.getSimpleName());
+                }
+                if (i != types.size() - 1) {
+                    os.write(" ".getBytes());
+                }
             }
-            if (i != types.size() - 1) {
-                os.write(" ".getBytes());
+        } catch (IOException t) {
+            e = t;
+            throw t;
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (Throwable e1) {
+                    if (e != null) {
+                        e.addSuppressed(e1);
+                    }
+                }
             }
         }
-        os.close();
     }
 
     protected Class<?> getTypeFromString(String type) throws IOException {
@@ -209,7 +216,9 @@ public class MyTableProvider implements TableProvider, AutoCloseable {
                 try {
                     is.close();
                 } catch (Throwable e1) {
-                    e.addSuppressed(e1);
+                    if (e != null) {
+                        e.addSuppressed(e1);
+                    }
                 }
             }
         }
@@ -381,7 +390,8 @@ public class MyTableProvider implements TableProvider, AutoCloseable {
     }
 
     @Override
-    public Storeable createFor(Table table, List<?> values) throws ColumnFormatException, IndexOutOfBoundsException {
+    public Storeable createFor(Table table, List<?> values) throws ColumnFormatException,
+            IndexOutOfBoundsException {
         checkClosed();
         return (Storeable) new MyStoreable(table, values);
     }

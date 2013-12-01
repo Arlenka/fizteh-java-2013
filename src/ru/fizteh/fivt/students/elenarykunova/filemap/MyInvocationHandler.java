@@ -30,7 +30,7 @@ public class MyInvocationHandler implements InvocationHandler {
                 xmlWriter.writeEmptyElement("null");
             } else {
                 if (object instanceof Iterable) {
-                    if (map.containsKey(object) && ((Iterable) object).iterator().hasNext()) {
+                    if (map.containsKey(object)) {
                         xmlWriter.writeCharacters("cyclic");
                     } else {
                         map.put(object, true);

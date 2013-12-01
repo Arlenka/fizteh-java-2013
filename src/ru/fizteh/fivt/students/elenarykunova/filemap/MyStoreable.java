@@ -234,29 +234,22 @@ public class MyStoreable implements Storeable {
         for (int i = 0; i < myValues.size(); i++) {
             Object val = myValues.get(i);
             if (val != null) {
-                switch (myTypes.get(i).getSimpleName()) {
-                case "Integer":
+                Class<?> type = myTypes.get(i);
+                if (type.equals(Integer.class)) {
                     res.append(String.valueOf((Integer) val));
-                    break;
-                case "String":
+                } else if(type.equals(String.class)) {
                     res.append(val);
-                    break;
-                case "Boolean":
+                } else if(type.equals(Boolean.class)) {
                     res.append(String.valueOf((Boolean) val));
-                    break;
-                case "Float":
+                } else if(type.equals(Float.class)) {
                     res.append(String.valueOf((Float) val));
-                    break;
-                case "Double":
+                } else if(type.equals(Double.class)) {
                     res.append(String.valueOf((Double) val));
-                    break;
-                case "Byte":
+                } else if(type.equals(Byte.class)) {
                     res.append(String.valueOf((Byte) val));
-                    break;
-                case "Long":
+                } else if(type.equals(Long.class)) {
                     res.append(String.valueOf((Long) val));
-                    break;
-                default:
+                } else {     
                     throw new RuntimeException("unexpected type : " + myTypes.get(i).getSimpleName());
                 }
             }
